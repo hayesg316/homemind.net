@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>homemind.net — The Uplink Framework</title>
+<meta name="description" content="A framework for AI-managed infrastructure. Multi-tier AI orchestration, self-documenting systems, and phased execution with human-in-the-loop safety gates.">
+<meta property="og:title" content="The Uplink: A Framework for AI-Managed Infrastructure">
+<meta property="og:description" content="A methodology for autonomous infrastructure management using multi-tier AI orchestration, self-documenting systems, and phased execution with human-in-the-loop safety gates.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://homemind.net">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0a0a0b;
+    --bg-surface: #111113;
+    --bg-elevated: #18181b;
+    --bg-hover: #1e1e22;
+    --border-subtle: #222226;
+    --border-accent: #2a3a2a;
+    --text-primary: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent: #4ade80;
+    --accent-dim: #22c55e;
+    --accent-glow: rgba(74, 222, 128, 0.08);
+    --accent-glow-strong: rgba(74, 222, 128, 0.15);
+    --warning: #f59e0b;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+    --font-serif: 'Source Serif 4', 'Georgia', serif;
+    --font-sans: 'Outfit', 'Helvetica Neue', sans-serif;
+    --content-width: 720px;
+    --wide-width: 900px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-subtle) var(--bg-deep);
+  }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: var(--font-serif);
+    font-size: 18px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: var(--accent-glow-strong);
+    color: var(--accent);
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* NOISE TEXTURE OVERLAY                       */
+  /* ═══════════════════════════════════════════ */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    background-size: 256px;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* NAVIGATION                                  */
+  /* ═══════════════════════════════════════════ */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 0 2rem;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(10, 10, 11, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  .nav-brand:hover { color: var(--accent); }
+
+  .nav-indicator {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse-dot 3s ease-in-out infinite;
+    box-shadow: 0 0 8px var(--accent-dim);
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .nav-links a:hover { color: var(--text-primary); }
+
+  /* ═══════════════════════════════════════════ */
+  /* HERO                                        */
+  /* ═══════════════════════════════════════════ */
+  .hero {
+    position: relative;
+    padding: 10rem 2rem 6rem;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 56px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent-dim);
+    margin-bottom: 2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: var(--font-mono);
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--text-primary);
+    max-width: 800px;
+    margin: 0 auto 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.35s forwards;
+  }
+
+  .hero h1 .accent {
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 300;
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto 3rem;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.5s forwards;
+  }
+
+  .hero-meta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.65s forwards;
+  }
+  .hero-meta span { margin: 0 0.75rem; }
+  .hero-meta .sep { color: var(--border-subtle); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* ARTICLE                                     */
+  /* ═══════════════════════════════════════════ */
+  .article-container {
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+
+  .article-container h2 {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 4rem 0 1.5rem;
+    padding-top: 3rem;
+    border-top: 1px solid var(--border-subtle);
+    letter-spacing: -0.01em;
+  }
+
+  .article-container h2:first-child {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  .article-container h3 {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--accent);
+    margin: 2.5rem 0 1rem;
+    letter-spacing: 0.01em;
+  }
+
+  .article-container p {
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    font-weight: 400;
+  }
+
+  .article-container strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .article-container em {
+    font-style: italic;
+    color: var(--text-secondary);
+  }
+
+  /* Standalone emphasis lines — the punchy one-liners */
+  .article-container p.punchline {
+    color: var(--accent);
+    font-family: var(--font-serif);
+    font-weight: 500;
+    font-size: 1.15rem;
+  }
+
+  .article-container p.kicker {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    padding: 1.25rem 1.5rem;
+    background: var(--accent-glow);
+    border-left: 2px solid var(--accent-dim);
+    border-radius: 0 6px 6px 0;
+    margin: 2rem 0;
+    line-height: 1.65;
+  }
+
+  /* Bulleted lists inside article */
+  .article-container ul {
+    list-style: none;
+    margin: 1.5rem 0;
+    padding: 0;
+  }
+
+  .article-container ul li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+  }
+
+  .article-container ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.7em;
+    width: 6px;
+    height: 6px;
+    background: var(--accent-dim);
+    border-radius: 50%;
+  }
+
+  .article-container ul li strong {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    color: var(--accent);
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* PRINCIPLE BLOCKS (closing section)          */
+  /* ═══════════════════════════════════════════ */
+  .principle {
+    margin: 2.5rem 0;
+    padding: 1.5rem 1.75rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .principle:hover {
+    border-color: var(--border-accent);
+    background: var(--bg-elevated);
+  }
+
+  .principle .principle-title {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .principle p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+    line-height: 1.7;
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* SERIES SECTION                              */
+  /* ═══════════════════════════════════════════ */
+  .series-section {
+    max-width: var(--wide-width);
+    margin: 0 auto;
+    padding: 4rem 2rem 6rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .series-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .series-header h2 {
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+  }
+
+  .series-header p {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--text-muted);
+  }
+
+  .series-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .series-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 1.75rem;
+    transition: all 0.3s ease;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .series-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-dim), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .series-card:hover {
+    border-color: var(--border-accent);
+    background: var(--bg-elevated);
+    transform: translateY(-2px);
+  }
+
+  .series-card:hover::before { opacity: 1; }
+
+  .series-week {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-dim);
+    margin-bottom: 0.75rem;
+  }
+
+  .series-title {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .series-desc {
+    font-family: var(--font-serif);
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .series-tag {
+    display: inline-block;
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* FOOTER                                      */
+  /* ═══════════════════════════════════════════ */
+  footer {
+    border-top: 1px solid var(--border-subtle);
+    padding: 3rem 2rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  footer a:hover { color: var(--accent); }
+
+  .footer-line {
+    margin-bottom: 0.5rem;
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* SCROLL REVEAL                               */
+  /* ═══════════════════════════════════════════ */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* RESPONSIVE                                  */
+  /* ═══════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    body { font-size: 16px; }
+    .hero { padding: 8rem 1.5rem 4rem; }
+    .hero h1 { font-size: 1.8rem; }
+    .article-container { padding: 0 1.5rem 4rem; }
+    .article-container h2 { font-size: 1.3rem; }
+    .series-section { padding: 3rem 1.5rem 4rem; }
+    nav { padding: 0 1.25rem; }
+    .nav-links { gap: 1rem; }
+  }
+
+  @media (max-width: 480px) {
+    .hero { padding: 7rem 1.25rem 3rem; }
+    .article-container { padding: 0 1.25rem 3rem; }
+    .series-grid { grid-template-columns: 1fr; }
+    .hero-meta span { display: block; margin: 0.25rem 0; }
+    .hero-meta .sep { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- NAVIGATION                                  -->
+<!-- ═══════════════════════════════════════════ -->
+<nav>
+  <a href="#" class="nav-brand">
+    <span class="nav-indicator"></span>
+    homemind.net
+  </a>
+  <ul class="nav-links">
+    <li><a href="#article">Framework</a></li>
+    <li><a href="#series">Series</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- HERO                                        -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-label">A Framework for AI-Managed Infrastructure</div>
+  <h1>The <span class="accent">Uplink</span></h1>
+  <p class="hero-sub">Multi-tier AI orchestration, self-documenting systems, and phased execution with human-in-the-loop safety gates. Built on consumer hardware. Tested on live infrastructure.</p>
+  <div class="hero-meta">
+    <span>By Gabe</span>
+    <span class="sep">/</span>
+    <span>2026</span>
+    <span class="sep">/</span>
+    <span>homemind.net</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- ARTICLE                                     -->
+<!-- ═══════════════════════════════════════════ -->
+<article class="article-container" id="article">
+
+  <h2 class="reveal">The Lie We Keep Telling Ourselves</h2>
+
+  <p class="reveal">Every infrastructure engineer has a moment — usually at 2 AM, usually after something breaks — where they realize no one actually knows how their environment works anymore. Not fully. Not the whole picture. The containers have spawned across too many nodes. The VPN tunnels thread through firewalls configured by someone who left the company, or by you, six months ago, at a level of exhaustion you'd rather not think about. Backup scripts fire on cron schedules nobody remembers setting. Configuration files are everywhere, and half of them are lying.</p>
+
+  <p class="reveal">The industry's response has been predictable: add more tools. Ansible playbooks. Terraform state files. Kubernetes manifests. CI/CD pipelines. Each one solves one layer of the problem and adds its own operational overhead. The engineer becomes a professional translator — converting business intent into YAML, applying it, and praying the documentation from three months ago still reflects reality.</p>
+
+  <p class="reveal">Then came the AI coding assistants. Claude Code, GitHub Copilot, Cursor — and they're genuinely powerful. On a greenfield project, they're transformative.</p>
+
+  <p class="reveal">But infrastructure is almost never greenfield. It's a system built over months or years by multiple people (or by one person at varying levels of exhaustion), and every change has to account for a living web of dependencies. When you point a general-purpose AI agent at a live environment and say "deploy this," it doesn't know that port 8080 is already occupied by a documentation server. It doesn't know that a backup script on node three depends on an NFS mount from node five. The model is extraordinarily capable.</p>
+
+  <p class="punchline reveal">It is also completely blind to your context.</p>
+
+  <p class="reveal">The Uplink was built to solve that blindness.</p>
+
+  <!-- ─────────────────────────────────────── -->
+
+  <h2 class="reveal">What This Actually Is</h2>
+
+  <p class="reveal">The Uplink is a six-node Linux cluster managed through a four-layer AI orchestration system. The hardware is deliberately unremarkable: a GPU workstation for AI inference, a media and application hub, a log aggregation node, a VPN gateway, an authentication and monitoring server, and a NAS for centralized backups. Consumer mini PCs. Managed switches. Nothing exotic.</p>
+
+  <p class="reveal">What makes it different is the management layer.</p>
+
+  <p class="reveal">The entire system is governed by a single, centralized configuration file distributed via NFS. This file is the absolute source of truth for every IP address, hostname, API endpoint, and application parameter in the environment. There are no hardcoded values — anywhere. Every application imports a shared loader that reads from this central config. Change a service endpoint or a health threshold, and the change propagates to every dependent system automatically.</p>
+
+  <p class="kicker reveal">This wasn't the original design. It was the result of a brutal audit that surfaced over 200 scattered API keys, IP references, and endpoint definitions buried across six nodes. The subsequent 19-step migration to centralize them was planned and executed by AI agents, with human review at every gate. That migration is also the proof that the methodology works — but we'll get there.</p>
+
+  <!-- ─────────────────────────────────────── -->
+
+  <h2 class="reveal">The Orchestration Model: Three Tiers, Zero Trust</h2>
+
+  <p class="reveal">The core architectural idea is simple: different AI models should operate at different levels of autonomy, and none of them should trust their own assumptions.</p>
+
+  <h3 class="reveal">Tier 1 — The Strategist</h3>
+
+  <p class="reveal">A cloud-based conversational AI serves as the strategic planning layer. This is where the human operator states intent in plain language: <em>"Migrate logging from Graylog to Loki across three nodes."</em></p>
+
+  <p class="reveal">The strategist never touches the infrastructure. It produces structured execution plans — phased Markdown documents specifying pre-conditions, exact commands, expected outputs, explicit rollback procedures, and hard stop-gates where execution must pause for human approval. The output is a contract, not a conversation.</p>
+
+  <h3 class="reveal">Tier 2 — The Amnesiac</h3>
+
+  <p class="reveal">Local AI coding agents run directly on the infrastructure nodes. They have SSH access. They can read files, execute commands, and modify configurations. They take the strategist's execution plans and work through them step by step.</p>
+
+  <p class="reveal">Here is the critical design principle: <strong>the local agent is treated as a highly capable amnesiac.</strong> It retains absolutely no memory between sessions. No stale mental model. No assumptions about the current state of the environment. Every time it spins up, it starts from documentation and the plan in front of it.</p>
+
+  <p class="punchline reveal">This sounds like a limitation. It is the single most important safety feature in the system.</p>
+
+  <p class="reveal">A stateful agent accumulates assumptions. It "remembers" that a port was available last Tuesday and skips the check. It "knows" a service is running because it deployed it three sessions ago — except someone restarted the node since then. Stale context is where outages come from. The amnesia isn't a bug; it's the guardrail. The agent is forced to verify before it acts, every single time.</p>
+
+  <h3 class="reveal">Tier 3 — The Watchers</h3>
+
+  <p class="reveal">Ultra-lightweight language models run on every node in the cluster. They perform exactly one job: collect system health metrics, compare them against defined thresholds, and classify the node as healthy, degraded, or critical.</p>
+
+  <p class="reveal">They do not make decisions. They do not take actions. They observe and report.</p>
+
+  <p class="kicker reveal">This separation of observation from action is deliberate and non-negotiable. A small model can flag that disk usage has hit 90%. Only a human-approved plan, executed by Tier 2 through a gated procedure, can actually fix it. The watchers are sensors, not actuators.</p>
+
+  <h3 class="reveal">The Economics</h3>
+
+  <p class="reveal">This architecture is cost-optimized by design. The cloud strategist is expensive per interaction but cheap per decision — one plan drives dozens of execution steps. The local coding agent eliminates expensive discovery API calls through a custom shell wrapper that pre-loads full environmental context. The node-level health models run on hardware that would otherwise be idle, making them effectively free.</p>
+
+  <!-- ─────────────────────────────────────── -->
+
+  <h2 class="reveal">Self-Documenting Infrastructure: The Active Memory</h2>
+
+  <p class="reveal">Documentation rot is not a discipline problem. It's a design problem. If documentation is a separate chore from the work itself, it will always fall behind. The Uplink treats documentation as a side effect of operation, not an afterthought.</p>
+
+  <p class="reveal"><strong>Layer 1: Automated Inventory.</strong> A network scanner runs on a weekly cadence, SSHing into every node to inventory running containers, map network interfaces, and generate comprehensive wiki pages representing the current state of the infrastructure. Because it writes directly to a structured wiki, you get a week-over-week changelog for free — without anyone having to maintain it.</p>
+
+  <p class="reveal"><strong>Layer 2: File-Level Watchdog.</strong> A file watchdog monitors source code directories across the environment. When a script or configuration file is modified, the watchdog detects the change via file hashing, generates updated documentation, and publishes it to the wiki automatically. The documentation updates because the code changed, not because someone remembered to update it.</p>
+
+  <p class="punchline reveal">But the most important part isn't writing the documentation. It's reading it.</p>
+
+  <p class="reveal">A custom skill forces the Tier 2 AI agents to query the wiki before they take any action. Before opening a port, creating a container, or modifying a route, the agent checks the living documentation to see if something is already there. This "sanity check first" discipline is what prevents AI agents from blindly stepping on existing services.</p>
+
+  <p class="reveal">The documentation isn't a reference archive. It's the active institutional memory of the entire infrastructure. The agents read it like a pilot reads a checklist — not optional, not skippable, and verified against reality before every action.</p>
+
+  <!-- ─────────────────────────────────────── -->
+
+  <h2 class="reveal">Phased Execution: Atomic Operations with Hard Stops</h2>
+
+  <p class="reveal">When the strategist plans a complex operation, it doesn't produce a single monolithic runbook. It generates a sequence of self-contained execution documents, each representing one atomic operation: one service migrated, one configuration updated, one firewall rule changed.</p>
+
+  <p class="reveal">Each document contains:</p>
+
+  <ul class="reveal">
+    <li><strong>Context</strong> — what this step does and why it matters</li>
+    <li><strong>Pre-verification</strong> — checks that must pass before execution begins</li>
+    <li><strong>Commands</strong> — the exact operations to perform</li>
+    <li><strong>Post-verification</strong> — checks that confirm the step succeeded</li>
+    <li><strong>Rollback procedure</strong> — how to undo everything if it didn't</li>
+    <li><strong>Confidence thresholds</strong> — conditions under which the agent must stop and escalate to the human</li>
+  </ul>
+
+  <p class="reveal">This was battle-tested during the global configuration migration — the one that centralized those 200+ scattered references. Each of the 19 steps was a separate document with its own rollback. When the executing agent discovered unexpected conditions — like an IP address formatted two different ways in different files — it hit the stop-gate and waited for human resolution. No step proceeded on an assumption.</p>
+
+  <p class="kicker reveal">The entire migration completed without a single service interruption. Not because nothing went wrong, but because every problem was caught in pre-verification, before it could cascade.</p>
+
+  <!-- ─────────────────────────────────────── -->
+
+  <h2 class="reveal">Why This Matters Beyond the Lab</h2>
+
+  <p class="reveal">Everything described here runs on consumer hardware — mini PCs, a workstation GPU, and managed switches. There is no custom silicon, no enterprise budget, and no vendor lock-in. The open-source stack underneath is interchangeable.</p>
+
+  <p class="reveal">The durable contribution is the methodology itself:</p>
+
+  <div class="principle reveal">
+    <div class="principle-title">AI agents must read before they write.</div>
+    <p>Documentation isn't a nicety; it's a prerequisite for safe autonomous action. Without active institutional memory, every agent session is a coin flip.</p>
+  </div>
+
+  <div class="principle reveal">
+    <div class="principle-title">Observation and action must be separated.</div>
+    <p>The system that detects a problem should never be the same system that fixes it. This boundary is what prevents a misclassification from becoming an outage.</p>
+  </div>
+
+  <div class="principle reveal">
+    <div class="principle-title">Amnesia is a feature.</div>
+    <p>Stateless execution agents that verify preconditions from documentation on every run are safer than stateful agents carrying assumptions from previous sessions. The cost of re-reading is trivial. The cost of a wrong assumption is not.</p>
+  </div>
+
+  <div class="principle reveal">
+    <div class="principle-title">Centralized configuration is a prerequisite for AI-managed infrastructure.</div>
+    <p>If an agent can't trace the impact of a change from a single source of truth, it cannot safely make that change. Scattered configuration makes autonomous management impossible.</p>
+  </div>
+
+  <div class="principle reveal">
+    <div class="principle-title">Atomic rollback is not optional.</div>
+    <p>Every operation must be independently reversible. If you can't undo step 7 without also undoing steps 1 through 6, your plan isn't granular enough.</p>
+  </div>
+
+  <p class="reveal">The specific tools will change. The models will improve. The hardware will turn over. But this pattern — strategic AI planning, stateless local execution with safety gates, living documentation as institutional memory, and centralized configuration as the foundation — is durable. It works at the scale of a homelab. It works at the scale of an enterprise. It is not a product to install. It is a way of thinking about how humans and AI systems collaborate in operations: the human provides intent and accountability; the AI provides precision and documentation discipline.</p>
+
+  <p class="punchline reveal">The machines carry the weight. They never fly blind.</p>
+
+</article>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- WEEKLY SERIES                               -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="series-section" id="series">
+  <div class="series-header">
+    <h2 class="reveal">The Uplink Series</h2>
+    <p class="reveal">Five weeks. Five principles. Each one stands alone.</p>
+  </div>
+
+  <div class="series-grid">
+
+    <div class="series-card reveal">
+      <div class="series-week">Week 01</div>
+      <div class="series-title">The Amnesiac Engineer</div>
+      <div class="series-desc">Why the safest AI agent on your infrastructure is the one that remembers absolutely nothing.</div>
+      <span class="series-tag">Statelessness</span>
+    </div>
+
+    <div class="series-card reveal">
+      <div class="series-week">Week 02</div>
+      <div class="series-title">Your Documentation Is Dead</div>
+      <div class="series-desc">Documentation rot isn't a discipline problem. It's a design problem. Here's what alive looks like.</div>
+      <span class="series-tag">Active Memory</span>
+    </div>
+
+    <div class="series-card reveal">
+      <div class="series-week">Week 03</div>
+      <div class="series-title">213 Hardcoded Secrets</div>
+      <div class="series-desc">The scariest audit I ever ran, and the migration that changed how I think about AI in operations.</div>
+      <span class="series-tag">Safety Gates</span>
+    </div>
+
+    <div class="series-card reveal">
+      <div class="series-week">Week 04</div>
+      <div class="series-title">Sensors, Not Actuators</div>
+      <div class="series-desc">If your AI monitoring can also remediate issues, you have a bomb with a brain.</div>
+      <span class="series-tag">Observation</span>
+    </div>
+
+    <div class="series-card reveal">
+      <div class="series-week">Week 05</div>
+      <div class="series-title">The $0 AI Operations Lab</div>
+      <div class="series-desc">The most common excuse for not experimenting with AI in operations. Consider it off the table.</div>
+      <span class="series-tag">Accessibility</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- FOOTER                                      -->
+<!-- ═══════════════════════════════════════════ -->
+<footer>
+  <div class="footer-line">homemind.net &mdash; 2026</div>
+  <div>Built with intent. Managed by methodology.</div>
+</footer>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SCROLL REVEAL SCRIPT                        -->
+<!-- ═══════════════════════════════════════════ -->
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
